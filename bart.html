@@ -11,27 +11,27 @@
       background: #0a0f1e;
       color: #fff;
       min-height: 100vh;
-      padding: 24px 16px;
+      padding: 20px 14px;
     }
     h1 {
       text-align: center;
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       font-weight: 700;
       letter-spacing: 0.05em;
       color: #00c4ff;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
     label {
       display: block;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: #8899aa;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
     select {
       width: 100%;
-      padding: 14px 12px;
+      padding: 12px 10px;
       font-size: 1rem;
       background: #131c2e;
       color: #fff;
@@ -41,110 +41,114 @@
       -webkit-appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300c4ff' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
-      background-position: right 14px center;
+      background-position: right 12px center;
       cursor: pointer;
     }
     select:focus { outline: none; border-color: #00c4ff; }
-    #results {
-      margin-top: 28px;
-    }
+
+    #results { margin-top: 22px; }
+
     .station-name {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #fff;
-      margin-bottom: 16px;
-      text-align: center;
-    }
-    .destination-group {
-      background: #131c2e;
-      border: 1px solid #1e3050;
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 12px;
-    }
-    .destination-label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #8899aa;
-      margin-bottom: 10px;
-    }
-    .destination-name {
       font-size: 1rem;
       font-weight: 600;
       color: #fff;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
+      text-align: center;
     }
-    .trains {
+
+    /* Each destination row */
+    .dest-row {
       display: flex;
+      align-items: center;
       gap: 10px;
-      flex-wrap: wrap;
+      background: #131c2e;
+      border: 1px solid #1e3050;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
     }
-    .train-pill {
+
+    /* Colored line swatch on the left */
+    .line-swatch {
+      width: 4px;
+      min-height: 36px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    /* Destination name fills remaining space */
+    .dest-name {
+      flex: 1;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    /* Train times on the right — all inline */
+    .times {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .time-chip {
       display: flex;
       flex-direction: column;
       align-items: center;
       background: #0a0f1e;
       border: 1px solid #1e3050;
-      border-radius: 10px;
-      padding: 10px 18px;
-      min-width: 80px;
+      border-radius: 8px;
+      padding: 5px 9px;
+      min-width: 46px;
     }
-    .train-mins {
-      font-size: 1.6rem;
+
+    .time-num {
+      font-size: 1.1rem;
       font-weight: 700;
       color: #00c4ff;
       line-height: 1;
     }
-    .train-mins.leaving { color: #ff6b6b; }
-    .train-label {
-      font-size: 0.7rem;
+    .time-num.leaving { color: #ff6b6b; }
+
+    .time-unit {
+      font-size: 0.6rem;
       color: #8899aa;
-      margin-top: 4px;
+      margin-top: 2px;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
     }
-    .color-bar {
-      width: 100%;
-      height: 3px;
-      border-radius: 2px;
-      margin-bottom: 10px;
-    }
+
     .loading {
       text-align: center;
       color: #8899aa;
-      font-size: 0.95rem;
-      padding: 30px 0;
+      font-size: 0.9rem;
+      padding: 28px 0;
     }
     .error {
       text-align: center;
       color: #ff6b6b;
-      font-size: 0.9rem;
-      padding: 20px;
+      font-size: 0.88rem;
+      padding: 18px;
       background: #1a0f0f;
       border-radius: 12px;
       border: 1px solid #3d1a1a;
     }
-    .refresh-row {
-      text-align: center;
-      margin-top: 20px;
-    }
+    .refresh-row { text-align: center; margin-top: 16px; }
     .refresh-btn {
       background: none;
       border: 1px solid #1e3050;
       color: #00c4ff;
-      padding: 10px 24px;
+      padding: 8px 22px;
       border-radius: 20px;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       cursor: pointer;
       letter-spacing: 0.05em;
     }
     .refresh-btn:active { opacity: 0.7; }
     .updated {
       text-align: center;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: #445566;
-      margin-top: 10px;
+      margin-top: 8px;
     }
   </style>
 </head>
@@ -163,10 +167,51 @@
   const API_KEY = 'ZBAS-PJTY-9ZUT-DWEI';
   const PROXY = 'https://corsproxy.io/?';
 
-  const LINE_COLORS = {
-    'YELLOW': '#FFD700', 'BLUE': '#0099CC', 'RED': '#CC0000',
-    'GREEN': '#339900', 'ORANGE': '#FF6600', 'BEIGE': '#C8B89A'
+  // Official BART line colors keyed by destination name
+  // Each destination maps to its line color
+  const DEST_COLORS = {
+    // Yellow line (Antioch ↔ SFO/Millbrae via Pittsburg)
+    'Antioch':              '#FFD800',
+    'Pittsburgh/Bay Point': '#FFD800',
+    'Pittsburg/Bay Point':  '#FFD800',
+    // Red line (Richmond ↔ Millbrae/Daly City)
+    'Richmond':             '#ED1C24',
+    'Millbrae':             '#ED1C24',
+    // Orange line (Richmond ↔ Fremont/Warm Springs)
+    'Berryessa/North San José': '#F9A01B',
+    'Berryessa':            '#F9A01B',
+    'Warm Springs/South Fremont': '#F9A01B',
+    'Warm Springs':         '#F9A01B',
+    'Fremont':              '#F9A01B',
+    // Blue line (Dublin/Pleasanton ↔ Daly City)
+    'Dublin/Pleasanton':    '#0099CC',
+    'Daly City':            '#0099CC',
+    // Green line (Berryessa ↔ Daly City via Oakland)
+    'Oakland Airport':      '#4DB847',
+    'Bay Fair':             '#4DB847',
+    // Beige/tan (OAK connector)
+    'Coliseum/Oakland Airport': '#C8B89A',
   };
+
+  // Fallback: map hex colors from API to line colors
+  const HEX_LINE_COLORS = {
+    'FFD800': '#FFD800', 'FFD700': '#FFD800',
+    'ED1C24': '#ED1C24', 'CC0000': '#ED1C24',
+    'F9A01B': '#F9A01B', 'FF6600': '#F9A01B',
+    '0099CC': '#0099CC',
+    '4DB847': '#4DB847', '339900': '#4DB847',
+    'C8B89A': '#C8B89A',
+  };
+
+  function getDestColor(destName, hexFromApi) {
+    if (DEST_COLORS[destName]) return DEST_COLORS[destName];
+    if (hexFromApi) {
+      const key = hexFromApi.replace('#','').toUpperCase();
+      if (HEX_LINE_COLORS[key]) return HEX_LINE_COLORS[key];
+      return '#' + hexFromApi.replace('#','');
+    }
+    return '#8899aa';
+  }
 
   async function fetchStations() {
     const url = `https://api.bart.gov/api/stn.aspx?cmd=stns&key=${API_KEY}&json=y`;
@@ -180,15 +225,6 @@
     const res = await fetch(PROXY + encodeURIComponent(url));
     const data = await res.json();
     return data.root;
-  }
-
-  function getColor(hexColor) {
-    if (!hexColor) return '#8899aa';
-    const c = hexColor.replace('#','').toUpperCase();
-    for (const [name, val] of Object.entries(LINE_COLORS)) {
-      if (val.replace('#','').toUpperCase() === c) return val;
-    }
-    return '#' + hexColor;
   }
 
   async function loadStations() {
@@ -224,23 +260,23 @@
       let html = `<div class="station-name">${stationName}</div>`;
 
       etds.forEach(dest => {
-        const estimates = dest.estimate.slice(0, 2);
-        const color = getColor(estimates[0].hexcolor);
+        const estimates = dest.estimate.slice(0, 3);
+        const hexFromApi = estimates[0]?.hexcolor || '';
+        const lineColor = getDestColor(dest.destination, hexFromApi);
 
-        html += `<div class="destination-group">
-          <div class="color-bar" style="background:${color}"></div>
-          <div class="destination-label">Toward</div>
-          <div class="destination-name">${dest.destination}</div>
-          <div class="trains">`;
+        html += `<div class="dest-row">
+          <div class="line-swatch" style="background:${lineColor}"></div>
+          <div class="dest-name" style="color:${lineColor}">${dest.destination}</div>
+          <div class="times">`;
 
         estimates.forEach(e => {
           const mins = e.minutes;
           const isLeaving = mins === 'Leaving';
-          const displayMins = isLeaving ? 'Now' : mins;
-          const displayLabel = isLeaving ? 'Leaving' : (mins === '1' ? 'minute' : 'minutes');
-          html += `<div class="train-pill">
-            <span class="train-mins ${isLeaving ? 'leaving' : ''}">${displayMins}</span>
-            <span class="train-label">${displayLabel}</span>
+          const displayNum = isLeaving ? 'Now' : mins;
+          const displayUnit = isLeaving ? 'Leaving' : (mins === '1' ? 'min' : 'min');
+          html += `<div class="time-chip">
+            <span class="time-num ${isLeaving ? 'leaving' : ''}">${displayNum}</span>
+            <span class="time-unit">${isLeaving ? '&nbsp;' : displayUnit}</span>
           </div>`;
         });
 
