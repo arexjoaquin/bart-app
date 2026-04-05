@@ -260,11 +260,25 @@
   }
 
   document.getElementById('stationSelect').addEventListener('change', function() {
-    if (this.value) loadDepartures(this.value);
-    else document.getElementById('results').innerHTML = '';
+    if (this.value) {
+      localStorage.setItem('lastStation', this.value);
+      loadDepartures(this.value);
+    } else {
+      document.getElementById('results').innerHTML = '';
+    }
   });
 
-  loadStations();
+  async function init() {
+    await loadStations();
+    const last = localStorage.getItem('lastStation');
+    if (last) {
+      const sel = document.getElementById('stationSelect');
+      sel.value = last;
+      if (sel.value) loadDepartures(last);
+    }
+  }
+
+  init();
 </script>
 </body>
 </html>
