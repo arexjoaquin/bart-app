@@ -1,2 +1,2 @@
 # bart-app
-App to show next BART train times
+Show the next 2 trains at a station
