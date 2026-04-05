@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BART Next Trains</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0f1e;
+      color: #fff;
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #00c4ff;
+      margin-bottom: 24px;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #8899aa;
+      margin-bottom: 8px;
+    }
+    select {
+      width: 100%;
+      padding: 14px 12px;
+      font-size: 1rem;
+      background: #131c2e;
+      color: #fff;
+      border: 1px solid #1e3050;
+      border-radius: 12px;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300c4ff' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      cursor: pointer;
+    }
+    select:focus { outline: none; border-color: #00c4ff; }
+    #results {
+      margin-top: 28px;
+    }
+    .station-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .destination-group {
+      background: #131c2e;
+      border: 1px solid #1e3050;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .destination-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #8899aa;
+      margin-bottom: 10px;
+    }
+    .destination-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+    .trains {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .train-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #0a0f1e;
+      border: 1px solid #1e3050;
+      border-radius: 10px;
+      padding: 10px 18px;
+      min-width: 80px;
+    }
+    .train-mins {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #00c4ff;
+      line-height: 1;
+    }
+    .train-mins.leaving { color: #ff6b6b; }
+    .train-label {
+      font-size: 0.7rem;
+      color: #8899aa;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .color-bar {
+      width: 100%;
+      height: 3px;
+      border-radius: 2px;
+      margin-bottom: 10px;
+    }
+    .loading {
+      text-align: center;
+      color: #8899aa;
+      font-size: 0.95rem;
+      padding: 30px 0;
+    }
+    .error {
+      text-align: center;
+      color: #ff6b6b;
+      font-size: 0.9rem;
+      padding: 20px;
+      background: #1a0f0f;
+      border-radius: 12px;
+      border: 1px solid #3d1a1a;
+    }
+    .refresh-row {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .refresh-btn {
+      background: none;
+      border: 1px solid #1e3050;
+      color: #00c4ff;
+      padding: 10px 24px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+    }
+    .refresh-btn:active { opacity: 0.7; }
+    .updated {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #445566;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🚇 BART Next Trains</h1>
+
+<label for="stationSelect">Select Station</label>
+<select id="stationSelect">
+  <option value="">— Choose a station —</option>
+</select>
+
+<div id="results"></div>
+
+<script>
+  const API_KEY = 'ZBAS-PJTY-9ZUT-DWEI';
+  const PROXY = 'https://corsproxy.io/?';
+
+  const LINE_COLORS = {
+    'YELLOW': '#FFD700', 'BLUE': '#0099CC', 'RED': '#CC0000',
+    'GREEN': '#339900', 'ORANGE': '#FF6600', 'BEIGE': '#C8B89A'
+  };
+
+  async function fetchStations() {
+    const url = `https://api.bart.gov/api/stn.aspx?cmd=stns&key=${API_KEY}&json=y`;
+    const res = await fetch(PROXY + encodeURIComponent(url));
+    const data = await res.json();
+    return data.root.stations.station;
+  }
+
+  async function fetchDepartures(abbr) {
+    const url = `https://api.bart.gov/api/etd.aspx?cmd=etd&orig=${abbr}&key=${API_KEY}&json=y`;
+    const res = await fetch(PROXY + encodeURIComponent(url));
+    const data = await res.json();
+    return data.root;
+  }
+
+  function getColor(hexColor) {
+    if (!hexColor) return '#8899aa';
+    const c = hexColor.replace('#','').toUpperCase();
+    for (const [name, val] of Object.entries(LINE_COLORS)) {
+      if (val.replace('#','').toUpperCase() === c) return val;
+    }
+    return '#' + hexColor;
+  }
+
+  async function loadStations() {
+    try {
+      const stations = await fetchStations();
+      const sel = document.getElementById('stationSelect');
+      stations.sort((a,b) => a.name.localeCompare(b.name));
+      stations.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.abbr;
+        opt.textContent = s.name;
+        sel.appendChild(opt);
+      });
+    } catch(e) {
+      document.getElementById('results').innerHTML =
+        '<div class="error">Could not load stations. Check your connection.</div>';
+    }
+  }
+
+  async function loadDepartures(abbr) {
+    const results = document.getElementById('results');
+    results.innerHTML = '<div class="loading">Loading departures…</div>';
+    try {
+      const root = await fetchDepartures(abbr);
+      const stationName = root.station[0].name;
+      const etds = root.station[0].etd;
+
+      if (!etds) {
+        results.innerHTML = '<div class="error">No departures found for this station right now.</div>';
+        return;
+      }
+
+      let html = `<div class="station-name">${stationName}</div>`;
+
+      etds.forEach(dest => {
+        const estimates = dest.estimate.slice(0, 2);
+        const color = getColor(estimates[0].hexcolor);
+
+        html += `<div class="destination-group">
+          <div class="color-bar" style="background:${color}"></div>
+          <div class="destination-label">Toward</div>
+          <div class="destination-name">${dest.destination}</div>
+          <div class="trains">`;
+
+        estimates.forEach(e => {
+          const mins = e.minutes;
+          const isLeaving = mins === 'Leaving';
+          const displayMins = isLeaving ? 'Now' : mins;
+          const displayLabel = isLeaving ? 'Leaving' : (mins === '1' ? 'minute' : 'minutes');
+          html += `<div class="train-pill">
+            <span class="train-mins ${isLeaving ? 'leaving' : ''}">${displayMins}</span>
+            <span class="train-label">${displayLabel}</span>
+          </div>`;
+        });
+
+        html += `</div></div>`;
+      });
+
+      const now = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+      html += `<div class="refresh-row">
+        <button class="refresh-btn" onclick="loadDepartures('${abbr}')">↻ Refresh</button>
+      </div>
+      <div class="updated">Updated at ${now}</div>`;
+
+      results.innerHTML = html;
+    } catch(e) {
+      results.innerHTML = '<div class="error">Could not load departures. Try again.</div>';
+    }
+  }
+
+  document.getElementById('stationSelect').addEventListener('change', function() {
+    if (this.value) loadDepartures(this.value);
+    else document.getElementById('results').innerHTML = '';
+  });
+
+  loadStations();
+</script>
+</body>
+</html>
